@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "urdukit"
+version = "0.1.0"
+description = "A lightweight Python middleware toolkit for handling Roman Urdu and Urdu-script text before it reaches LLMs, search engines, or NLP models."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Haseeb Arif", email = "haseebarif11@users.noreply.github.com"}
+]
+keywords = [
+    "urdu",
+    "roman-urdu",
+    "pakistan",
+    "nlp",
+    "llm",
+    "middleware",
+    "normalization",
+    "transliteration",
+    "script-detection",
+    "embeddings",
+    "semantic-search"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Urdu",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+dependencies = []
+
+[project.optional-dependencies]
+embeddings = [
+    "sentence-transformers>=2.2.0",
+    "numpy>=1.20.0"
+]
+dev = [
+    "pytest>=7.0.0",
+    "ruff"
+]
+
+[project.urls]
+Homepage = "https://github.com/haseebarif11/Urdu-Kit"
+Repository = "https://github.com/haseebarif11/Urdu-Kit.git"
+"Bug Tracker" = "https://github.com/haseebarif11/Urdu-Kit/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["urdukit*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
