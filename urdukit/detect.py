@@ -85,6 +85,13 @@ ENGLISH_MARKERS: Set[str] = {
 }
 
 
+# Pakistani Roman Urdu common phonetics & endings/n-grams
+ROMAN_URDU_PATTERN = re.compile(
+    r"(kh|gh|ch|th|dh|bh|jh|ain|ein|oun|iya|iye|nay|kay|hon|hoon|rha|rhi|rhe|bht|nhi)\b",
+    re.I,
+)
+
+
 def _tokenize_latin(text: str) -> list[str]:
     """Extract lowercased Latin alphanumeric word tokens."""
     return [w.lower() for w in re.findall(r"\b[A-Za-z]+['’]?[A-Za-z]*\b", text)]
@@ -162,9 +169,7 @@ def detect_script(text: str) -> Script:
         return Script.ENGLISH
 
     # If no marker hits, use heuristic pattern check for common Roman Urdu endings/n-grams
-    # Pakistani Roman Urdu common phonetics: 'kh', 'gh', 'ch', 'th', 'dh', 'bh', 'jh', 'ain', 'ein', 'oun', 'nay', 'kay'
-    ru_pattern = re.compile(r"(kh|gh|ch|th|dh|bh|jh|ain|ein|oun|iya|iye|nay|kay|hon|hoon|rha|rhi|rhe|bht|nhi)\b", re.I)
-    ru_matches = len(ru_pattern.findall(text))
+    ru_matches = len(ROMAN_URDU_PATTERN.findall(text))
 
     if ru_matches >= 2:
         return Script.ROMAN_URDU

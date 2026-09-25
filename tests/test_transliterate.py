@@ -29,3 +29,33 @@ def test_urdu_to_roman_lexicon():
 def test_transliterate_empty():
     assert roman_to_urdu("") == ""
     assert urdu_to_roman("") == ""
+
+
+def test_roman_to_urdu_loanwords():
+    """Loanwords embedded in Roman Urdu should be rendered with standard Urdu script spellings."""
+    res = roman_to_urdu("mera order cancel kr dein")
+    assert res == "میرا آرڈر کینسل کر دیں"
+    assert "آرڈر" in res
+    assert "کینسل" in res
+
+
+def test_roman_to_urdu_invoice():
+    """Invoice and loanwords should be correctly handled and not mangled."""
+    res = roman_to_urdu("invoice nahi mili")
+    assert res == "انوائس نہیں ملی"
+    assert "انوائس" in res
+    assert "نہیں" in res
+    assert "ملی" in res
+
+
+def test_roman_to_urdu_unrecognized_english_word():
+    """Unrecognized English words not in loanwords and not Roman Urdu should remain untouched."""
+    # Embedded unrecognized English word in Roman Urdu context
+    res = roman_to_urdu("yeh algorithm bohot acha hai")
+    assert "algorithm" in res
+    assert res == "یہ algorithm بہت اچھا ہے"
+
+    # Standalone unrecognized Latin words
+    assert roman_to_urdu("blockchain") == "blockchain"
+    assert roman_to_urdu("defective return policy") == "defective return policy"
+

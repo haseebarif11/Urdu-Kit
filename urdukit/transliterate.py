@@ -5,7 +5,147 @@ Roman Urdu and standard Urdu Script (Nastaliq/Naskh).
 """
 
 import re
-from typing import Dict
+from typing import Dict, Set
+
+from urdukit.detect import ENGLISH_MARKERS, ROMAN_URDU_MARKERS, ROMAN_URDU_PATTERN, URDU_CHAR_REGEX
+
+
+# Common English loanwords conventionally written in Urdu script
+ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
+    # Customer service, e-commerce, banking & retail
+    "order": "آرڈر",
+    "orders": "آرڈرز",
+    "invoice": "انوائس",
+    "invoices": "انوائسز",
+    "check": "چیک",
+    "checks": "چیکس",
+    "please": "پلیز",
+    "plz": "پلیز",
+    "cancel": "کینسل",
+    "call": "کال",
+    "calls": "کالز",
+    "message": "میسج",
+    "messages": "میسجز",
+    "msg": "میسج",
+    "msgs": "میسجز",
+    "delivery": "ڈلیوری",
+    "address": "ایڈریس",
+    "price": "پرائس",
+    "bill": "بل",
+    "bills": "بلز",
+    "receipt": "رسید",
+    "payment": "پیمنٹ",
+    "payments": "پیمنٹس",
+    "cash": "کیش",
+    "card": "کارڈ",
+    "cards": "کارڈز",
+    "bank": "بینک",
+    "account": "اکاؤنٹ",
+    "accounts": "اکاؤنٹس",
+    "discount": "ڈسکاؤنٹ",
+    "offer": "آفر",
+    "offers": "آفرز",
+    "store": "سٹور",
+    "shop": "شاپ",
+    "parcel": "پارسل",
+    "courier": "کوریئر",
+    "tracking": "ٹریکنگ",
+    "customer": "کسٹمر",
+    "service": "سروس",
+    "support": "سپورٹ",
+    "help": "ہیلپ",
+    "ticket": "ٹکٹ",
+    "tickets": "ٹکٹس",
+    "booking": "بکنگ",
+    "item": "آئٹم",
+    "items": "آئٹمز",
+    "product": "پروڈکٹ",
+    "products": "پروڈکٹس",
+
+    # Technology, telecom & devices
+    "phone": "فون",
+    "phones": "فونز",
+    "email": "ای میل",
+    "emails": "ای میلز",
+    "mail": "میل",
+    "password": "پاس ورڈ",
+    "internet": "انٹرنیٹ",
+    "mobile": "موبائل",
+    "computer": "کمپیوٹر",
+    "laptop": "لیپ ٹاپ",
+    "online": "آن لائن",
+    "system": "سسٹم",
+    "data": "ڈیٹا",
+    "code": "کوڈ",
+    "link": "لنک",
+    "app": "ایپ",
+    "apps": "ایپس",
+    "website": "ویب سائٹ",
+    "site": "سائٹ",
+    "screen": "سکرین",
+    "server": "سرور",
+    "network": "نیٹ ورک",
+    "sim": "سم",
+    "number": "نمبر",
+    "numbers": "نمبرز",
+    "group": "گروپ",
+    "profile": "پروفائل",
+    "post": "پوسٹ",
+    "page": "پیج",
+    "video": "ویڈیو",
+    "videos": "ویڈیوز",
+    "audio": "آڈیو",
+    "photo": "فوٹو",
+    "photos": "فوٹوز",
+    "pic": "پک",
+    "pics": "پکس",
+    "file": "فائل",
+    "files": "فائلز",
+
+    # Business, workplace & everyday conversational loanwords
+    "office": "آفس",
+    "meeting": "میٹنگ",
+    "meetings": "میٹنگز",
+    "project": "پروجیکٹ",
+    "projects": "پروجیکٹس",
+    "team": "ٹیم",
+    "boss": "باس",
+    "company": "کمپنی",
+    "job": "جاب",
+    "time": "ٹائم",
+    "urgent": "ارجنٹ",
+    "problem": "پرابلم",
+    "problems": "پرابلمز",
+    "issue": "ایشو",
+    "issues": "ایشوز",
+    "status": "سٹیٹس",
+    "update": "اپ ڈیٹ",
+    "result": "رزلٹ",
+    "report": "رپورٹ",
+    "test": "ٹیسٹ",
+    "class": "کلاس",
+    "school": "سکول",
+    "college": "کالج",
+    "university": "یونیورسٹی",
+    "hospital": "ہسپتال",
+    "doctor": "ڈاکٹر",
+    "car": "کار",
+    "bus": "بس",
+    "train": "ٹرین",
+    "hotel": "ہوٹل",
+    "room": "روم",
+    "ok": "اوکے",
+    "okay": "اوکے",
+    "yes": "یس",
+    "no": "نو",
+    "thanks": "تھینکس",
+    "thank": "تھینک",
+    "sorry": "سوری",
+    "welcome": "ویلکم",
+    "hello": "ہیلو",
+    "hi": "ہائے",
+    "bye": "بائے",
+}
 
 
 # High-frequency Roman Urdu -> Urdu script dictionary (orthographically correct Urdu)
@@ -210,7 +350,42 @@ LEXICON_ROMAN_TO_URDU: Dict[str, str] = {
     "inshallah": "انشاءاللہ",
     "mashallah": "ماشاءاللہ",
     "alhamdulillah": "الحمدللہ",
-    "jazakallah": "جزاک اللہ"
+    "jazakallah": "جزاک اللہ",
+
+    # Additional high-frequency verbs, particles & modifiers
+    "ho": "ہو",
+    "hoo": "ہو",
+    "kb": "کب",
+    "tk": "تک",
+    "de": "دے",
+    "do": "دو",
+    "den": "دیں",
+    "dein": "دیں",
+    "di": "دی",
+    "diya": "دیا",
+    "dya": "دیا",
+    "le": "لے",
+    "lo": "لو",
+    "len": "لیں",
+    "lein": "لیں",
+    "li": "لی",
+    "liya": "لیا",
+    "lia": "لیا",
+    "mili": "ملی",
+    "mila": "ملا",
+    "mile": "ملے",
+    "mil": "مل",
+    "abhi": "ابھی",
+    "kabhi": "کبھی",
+    "tabhi": "تبھی",
+    "sab": "سب",
+    "kuch": "کچھ",
+    "koi": "کوئی",
+    "kisi": "کسی",
+    "dair": "دیر",
+    "der": "دیر",
+    "hal": "حال",
+    "haal": "حال"
 }
 
 # Invert for Urdu Script -> Roman Urdu lookups
@@ -236,6 +411,12 @@ LEXICON_URDU_TO_ROMAN["کر"] = "kar"
 LEXICON_URDU_TO_ROMAN["رہا"] = "raha"
 LEXICON_URDU_TO_ROMAN["رہی"] = "rahi"
 LEXICON_URDU_TO_ROMAN["رہے"] = "rahe"
+LEXICON_URDU_TO_ROMAN["دیں"] = "dein"
+LEXICON_URDU_TO_ROMAN["ملی"] = "mili"
+LEXICON_URDU_TO_ROMAN["ابھی"] = "abhi"
+LEXICON_URDU_TO_ROMAN["ہو"] = "ho"
+LEXICON_URDU_TO_ROMAN["کب"] = "kab"
+LEXICON_URDU_TO_ROMAN["تک"] = "tak"
 
 
 # Phonetic multigraph / character rules for fallback roman_to_urdu
@@ -292,13 +473,54 @@ ROMAN_CHAR_TO_URDU = {
 }
 
 
-def _transliterate_word_roman_to_urdu(word: str) -> str:
-    """Transliterate a single Roman Urdu word to Urdu script."""
-    lower_w = word.lower()
-    if lower_w in LEXICON_ROMAN_TO_URDU:
-        return LEXICON_ROMAN_TO_URDU[lower_w]
+# Distinctive Roman Urdu morphological & inflectional patterns
+ROMAN_URDU_INFLECTION_PATTERN = re.compile(
+    r"([aeiou]y?e?ga|[aeiou]y?e?gi|[aeiou]y?e?ge|[aeiou]y?e?nge|[aeiou]unga|[aeiou]oonga|waala|waali|waale|wala|wali|wale)\b",
+    re.I,
+)
+DISTINCT_URDU_DIGRAPHS = ("kh", "gh", "jh", "dh", "bh", "rh")
+DISTINCT_URDU_ENDINGS = re.compile(
+    r"(ein|oun|iya|iye|nay|kay|hon|hoon|rha|rhi|rhe|bht|nhi)\b",
+    re.I,
+)
 
-    # Rule-based transducer
+
+def _is_roman_urdu_word(word: str) -> bool:
+    """Check if a Latin word is recognized Roman Urdu vocabulary or follows Roman Urdu patterns."""
+    lower_w = word.lower()
+
+    # 1. Known Roman Urdu dictionaries and markers
+    if lower_w in LEXICON_ROMAN_TO_URDU:
+        return True
+    if lower_w in ROMAN_URDU_MARKERS:
+        return True
+
+    # 2. English markers that are not in Roman Urdu lexicon are English, not Roman Urdu
+    if lower_w in ENGLISH_MARKERS:
+        return False
+
+    # 3. Check for distinct Urdu digraphs (e.g. 'bhai', 'ghar', 'khabar', 'dhan', 'jheel')
+    if any(dg in lower_w for dg in DISTINCT_URDU_DIGRAPHS):
+        # Exclude English words containing 'gh' like 'night', 'light', 'high', 'laugh', 'rough', 'tough', 'cough', 'ghost'
+        if "gh" in lower_w and not any(dg in lower_w for dg in ("kh", "jh", "dh", "bh", "rh")):
+            if re.search(r"(ight|ough|augh|igh\b|^ghost)", lower_w):
+                return False
+        return True
+
+    # 4. Check for distinct Urdu grammatical endings
+    if DISTINCT_URDU_ENDINGS.search(lower_w):
+        return True
+
+    # 5. Check for Roman Urdu verb inflection patterns (e.g. 'aayega', 'jayegi', 'karenge', 'karunga')
+    if ROMAN_URDU_INFLECTION_PATTERN.search(lower_w):
+        return True
+
+    return False
+
+
+def _transliterate_phonetic_roman_to_urdu(word: str) -> str:
+    """Phonetic rule-based transducer for Roman Urdu words."""
+    lower_w = word.lower()
     res = []
     i = 0
     w_len = len(lower_w)
@@ -339,11 +561,46 @@ def _transliterate_word_roman_to_urdu(word: str) -> str:
     return "".join(res)
 
 
+def _transliterate_word_roman_to_urdu(word: str) -> str:
+    """Transliterate a single Roman Urdu word to Urdu script.
+
+    1. Checks common English loanword dictionary for conventional Urdu script spelling.
+    2. Checks high-frequency Roman Urdu lexicon.
+    3. If the word matches recognized Roman Urdu vocabulary/patterns, phonetically transliterates.
+    4. Otherwise, preserves the original word untouched in Latin script.
+    """
+    if not word or not any(c.isalpha() for c in word):
+        return word
+
+    # If the word already contains Urdu script characters, preserve as-is
+    if URDU_CHAR_REGEX.search(word):
+        return word
+
+    lower_w = word.lower()
+
+    # 1. Preferred: English loanwords conventionally written in Urdu script
+    if lower_w in ENGLISH_LOANWORDS_TO_URDU:
+        return ENGLISH_LOANWORDS_TO_URDU[lower_w]
+
+    # 2. High-frequency Roman Urdu lexicon
+    if lower_w in LEXICON_ROMAN_TO_URDU:
+        return LEXICON_ROMAN_TO_URDU[lower_w]
+
+    # 3. Check if this is a Roman Urdu word matching patterns/vocabulary
+    if not _is_roman_urdu_word(lower_w):
+        # Fallback: leave unrecognized English / Latin words untouched
+        return word
+
+    # 4. Phonetic rule-based transducer fallback for recognized Roman Urdu patterns
+    return _transliterate_phonetic_roman_to_urdu(word)
+
+
 def roman_to_urdu(text: str) -> str:
     """Convert Roman Urdu text to Urdu script.
 
-    Uses a high-frequency lexicon for common words and phrases,
-    with phonetic fallback rules for unmatched vocabulary.
+    Uses a loanword dictionary for common English loanwords, a high-frequency
+    lexicon for Roman Urdu words and phrases, phonetic fallback rules for
+    unmatched Roman Urdu patterns, and leaves unrecognized Latin words untouched.
 
     Args:
         text: Input string in Roman Urdu.
