@@ -48,6 +48,37 @@ def test_roman_to_urdu_invoice():
     assert "ملی" in res
 
 
+def test_english_loanwords_mappings():
+    """Verify that all core English loanwords map accurately to conventional Urdu spellings."""
+    from urdukit.transliterate import ENGLISH_LOANWORDS
+
+    expected = {
+        "order": "آرڈر",
+        "invoice": "انوائس",
+        "check": "چیک",
+        "please": "پلیز",
+        "cancel": "کینسل",
+        "call": "کال",
+        "message": "میسج",
+        "phone": "فون",
+        "email": "ای میل",
+        "account": "اکاؤنٹ",
+        "password": "پاسورڈ",
+        "internet": "انٹرنیٹ",
+        "mobile": "موبائل",
+        "office": "آفس",
+        "meeting": "میٹنگ",
+        "project": "پراجیکٹ",
+        "price": "پرائس",
+        "delivery": "ڈیلیوری",
+        "address": "ایڈریس",
+    }
+    for word, expected_urdu in expected.items():
+        assert ENGLISH_LOANWORDS[word] == expected_urdu
+        assert roman_to_urdu(word) == expected_urdu
+        assert roman_to_urdu(word.upper()) == expected_urdu
+
+
 def test_roman_to_urdu_unrecognized_english_word():
     """Unrecognized English words not in loanwords and not Roman Urdu should remain untouched."""
     # Embedded unrecognized English word in Roman Urdu context

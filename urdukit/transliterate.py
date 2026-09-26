@@ -11,8 +11,8 @@ from urdukit.detect import ENGLISH_MARKERS, ROMAN_URDU_MARKERS, ROMAN_URDU_PATTE
 
 
 # Common English loanwords conventionally written in Urdu script
-ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
-    # Customer service, e-commerce, banking & retail
+ENGLISH_LOANWORDS: Dict[str, str] = {
+    # Core English loanwords
     "order": "آرڈر",
     "orders": "آرڈرز",
     "invoice": "انوائس",
@@ -28,9 +28,25 @@ ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
     "messages": "میسجز",
     "msg": "میسج",
     "msgs": "میسجز",
-    "delivery": "ڈلیوری",
-    "address": "ایڈریس",
+    "phone": "فون",
+    "phones": "فونز",
+    "email": "ای میل",
+    "emails": "ای میلز",
+    "account": "اکاؤنٹ",
+    "accounts": "اکاؤنٹس",
+    "password": "پاسورڈ",
+    "internet": "انٹرنیٹ",
+    "mobile": "موبائل",
+    "office": "آفس",
+    "meeting": "میٹنگ",
+    "meetings": "میٹنگز",
+    "project": "پراجیکٹ",
+    "projects": "پراجیکٹس",
     "price": "پرائس",
+    "delivery": "ڈیلیوری",
+    "address": "ایڈریس",
+
+    # Additional retail, e-commerce, banking & workplace loanwords
     "bill": "بل",
     "bills": "بلز",
     "receipt": "رسید",
@@ -40,8 +56,6 @@ ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
     "card": "کارڈ",
     "cards": "کارڈز",
     "bank": "بینک",
-    "account": "اکاؤنٹ",
-    "accounts": "اکاؤنٹس",
     "discount": "ڈسکاؤنٹ",
     "offer": "آفر",
     "offers": "آفرز",
@@ -63,14 +77,7 @@ ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
     "products": "پروڈکٹس",
 
     # Technology, telecom & devices
-    "phone": "فون",
-    "phones": "فونز",
-    "email": "ای میل",
-    "emails": "ای میلز",
     "mail": "میل",
-    "password": "پاس ورڈ",
-    "internet": "انٹرنیٹ",
-    "mobile": "موبائل",
     "computer": "کمپیوٹر",
     "laptop": "لیپ ٹاپ",
     "online": "آن لائن",
@@ -102,12 +109,7 @@ ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
     "file": "فائل",
     "files": "فائلز",
 
-    # Business, workplace & everyday conversational loanwords
-    "office": "آفس",
-    "meeting": "میٹنگ",
-    "meetings": "میٹنگز",
-    "project": "پروجیکٹ",
-    "projects": "پروجیکٹس",
+    # Everyday conversational loanwords
     "team": "ٹیم",
     "boss": "باس",
     "company": "کمپنی",
@@ -146,6 +148,9 @@ ENGLISH_LOANWORDS_TO_URDU: Dict[str, str] = {
     "hi": "ہائے",
     "bye": "بائے",
 }
+
+# Alias for backward compatibility
+ENGLISH_LOANWORDS_TO_URDU = ENGLISH_LOANWORDS
 
 
 # High-frequency Roman Urdu -> Urdu script dictionary (orthographically correct Urdu)
@@ -579,8 +584,8 @@ def _transliterate_word_roman_to_urdu(word: str) -> str:
     lower_w = word.lower()
 
     # 1. Preferred: English loanwords conventionally written in Urdu script
-    if lower_w in ENGLISH_LOANWORDS_TO_URDU:
-        return ENGLISH_LOANWORDS_TO_URDU[lower_w]
+    if lower_w in ENGLISH_LOANWORDS:
+        return ENGLISH_LOANWORDS[lower_w]
 
     # 2. High-frequency Roman Urdu lexicon
     if lower_w in LEXICON_ROMAN_TO_URDU:
@@ -598,7 +603,7 @@ def _transliterate_word_roman_to_urdu(word: str) -> str:
 def roman_to_urdu(text: str) -> str:
     """Convert Roman Urdu text to Urdu script.
 
-    Uses a loanword dictionary for common English loanwords, a high-frequency
+    Uses an English loanwords dictionary for common loanwords, a high-frequency
     lexicon for Roman Urdu words and phrases, phonetic fallback rules for
     unmatched Roman Urdu patterns, and leaves unrecognized Latin words untouched.
 
@@ -618,6 +623,14 @@ def roman_to_urdu(text: str) -> str:
         if not token or token.isspace() or re.match(r"^[^\w\s]+$", token):
             result.append(token)
             continue
+
+        # Check ENGLISH_LOANWORDS dictionary FIRST (case-insensitive)
+        token_lower = token.lower()
+        if token_lower in ENGLISH_LOANWORDS:
+            result.append(ENGLISH_LOANWORDS[token_lower])
+            continue
+
+        # Check Roman Urdu vocabulary, lexicon & phonetic transliteration
         result.append(_transliterate_word_roman_to_urdu(token))
 
     return "".join(result)
