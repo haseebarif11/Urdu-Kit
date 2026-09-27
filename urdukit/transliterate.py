@@ -751,3 +751,72 @@ def urdu_to_roman(text: str) -> str:
         result.append(_transliterate_word_urdu_to_roman(token))
 
     return "".join(result)
+
+
+def to_urdu_script(text: str, convert_loanwords: bool = True) -> str:
+    """Convert mixed, Roman Urdu, or Urdu text into unified Urdu script.
+
+    Provides a unified Urdu script representation suitable for downstream
+    Urdu NLP pipelines, embedding models, or Urdu-first LLMs.
+
+    Behavior:
+    - Urdu script tokens: preserved as-is.
+    - Roman Urdu tokens: transliterated via existing roman_to_urdu logic.
+    - English loanwords (in ENGLISH_LOANWORDS dict): converted only if
+      convert_loanwords=True (default True). If False, left in Latin script.
+    - Unrecognized English words (not in loanword dict, not Roman Urdu):
+      always left untouched in Latin script, regardless of convert_loanwords.
+
+    Args:
+        text: The input text to process.
+        convert_loanwords: Whether to convert recognized English loanwords to
+            Urdu script. Defaults to True.
+
+    Returns:
+        The processed string with Roman Urdu and loanwords converted to Urdu script.
+    """
+    if not text:
+        return ""
+
+    tokens = re.split(r"(\s+|[^\w\s])", text)
+    result = []
+
+    for token in tokens:
+        if not token or token.isspace() or re.match(r"^[^\w\s]+$", token):
+            result.append(token)
+            continue
+
+        if not any(c.isalpha() for c in token):
+            result.append(token)
+            continue
+
+        # 1. Urdu script tokens: preserved as-is
+        if URDU_CHAR_REGEX.search(token):
+            result.append(token)
+            continue
+
+        token_lower = token.lower()
+
+        # 2. English loanwords (in ENGLISH_LOANWORDS dict):
+        # Converted only if convert_loanwords=True; if False, left in Latin script.
+        if token_lower in ENGLISH_LOANWORDS:
+            if convert_loanwords:
+                result.append(ENGLISH_LOANWORDS[token_lower])
+            else:
+                result.append(token)
+            continue
+
+        # 3. Roman Urdu tokens: transliterated via existing roman_to_urdu logic
+        if token_lower in LEXICON_ROMAN_TO_URDU:
+            result.append(LEXICON_ROMAN_TO_URDU[token_lower])
+            continue
+
+        if _is_roman_urdu_word(token_lower):
+            result.append(_transliterate_phonetic_roman_to_urdu(token))
+            continue
+
+        # 4. Unrecognized English words: ALWAYS left untouched in Latin script
+        result.append(token)
+
+    return "".join(result)
+
