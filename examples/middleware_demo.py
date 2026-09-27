@@ -12,7 +12,14 @@ if hasattr(sys.stdout, "reconfigure"):
     except Exception:
         pass
 
-from urdukit import Script, detect_script, normalize, roman_to_urdu, urdu_to_roman
+from urdukit import (
+    Script,
+    detect_script,
+    normalize,
+    roman_to_urdu,
+    to_urdu_script,
+    urdu_to_roman,
+)
 
 
 def main():
@@ -47,6 +54,12 @@ def main():
         elif detected == Script.URDU_SCRIPT:
             roman_text = urdu_to_roman(clean_text)
             print(f"Roman Urdu   : {roman_text}")
+        elif detected == Script.MIXED:
+            # Conservative behavior: kept as-is (clean_text)
+            # Unified option: to_urdu_script() converts Roman Urdu and loanwords
+            unified_script = to_urdu_script(clean_text)
+            print(f"Urdu Script  : {unified_script} (via to_urdu_script)")
+
 
     print("\n" + "=" * 60)
     print("Demo completed successfully!")
