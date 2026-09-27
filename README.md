@@ -122,12 +122,12 @@ print(normalize(raw_urdu))
 
 ---
 
-### 3. Transliteration (Roman Urdu ⇄ Urdu Script)
+### 3. Transliteration & Script Unification
 
-Fast bidirectional rule-based and lexicon-backed transliteration:
+Fast bidirectional rule-based and lexicon-backed transliteration, plus unified script conversion:
 
 ```python
-from urdukit import roman_to_urdu, urdu_to_roman
+from urdukit import roman_to_urdu, urdu_to_roman, to_urdu_script
 
 # Roman Urdu to Urdu Script
 urdu_text = roman_to_urdu("kya hal hai aapka? bohot shukriya")
@@ -138,7 +138,19 @@ print(urdu_text)
 roman_text = urdu_to_roman("آپ کیسے ہیں؟")
 print(roman_text)
 # Output: "aap kaise hain?"
+
+# Unified Urdu Script for Mixed / Code-switched text (opt-in for LLMs/embeddings)
+mixed_input = "میرا order cancel کر دیں please, bht dair ho gayi hai"
+unified = to_urdu_script(mixed_input, convert_loanwords=True)
+print(unified)
+# Output: "میرا آرڈر کینسل کر دیں پلیز, بہت دیر ہو گئی ہے"
+
+# Retain loanwords in Latin while converting Roman Urdu:
+unified_latin_loanwords = to_urdu_script(mixed_input, convert_loanwords=False)
+print(unified_latin_loanwords)
+# Output: "میرا order cancel کر دیں please, بہت دیر ہو گئی ہے"
 ```
+
 
 ---
 
