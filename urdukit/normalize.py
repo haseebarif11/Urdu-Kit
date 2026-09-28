@@ -197,7 +197,31 @@ ROMAN_URDU_CANONICAL_MAP: Dict[str, str] = {
     "plsss": "please",
     "thx": "thanks",
     "tysm": "thank you so much",
-    "wese": "waise"
+    "wese": "waise",
+    "chahye": "chahiye",
+    "chaiye": "chahiye",
+    "chye": "chahiye",
+    "kch": "kuch",
+    "sb": "sab",
+    "sbb": "sab",
+    "agr": "agar",
+    "magr": "magar",
+    "shyd": "shayad",
+    "srf": "sirf",
+    "jb": "jab",
+    "tb": "tab",
+    "kb": "kab",
+    "aik": "ek",
+    "kbhi": "kabhi",
+    "kbi": "kabhi",
+    "hmesha": "hamesha",
+    "hmsha": "hamesha",
+    "rupay": "rupaye",
+    "rupy": "rupaye",
+    "blna": "bolna",
+    "kho": "kaho",
+    "sno": "suno",
+    "btana": "batana"
 }
 
 # Urdu Unicode normalization table

@@ -90,3 +90,28 @@ def test_roman_to_urdu_unrecognized_english_word():
     assert roman_to_urdu("blockchain") == "blockchain"
     assert roman_to_urdu("defective return policy") == "defective return policy"
 
+
+def test_expanded_loanwords():
+    from urdukit.transliterate import ENGLISH_LOANWORDS, to_urdu_script
+
+    assert ENGLISH_LOANWORDS["driver"] == "ڈرائیور"
+    assert ENGLISH_LOANWORDS["location"] == "لوکیشن"
+    assert ENGLISH_LOANWORDS["rider"] == "رائیڈر"
+    assert ENGLISH_LOANWORDS["balance"] == "بیلنس"
+
+    mixed = "driver ki live location share kar dein"
+    res = to_urdu_script(mixed)
+    assert "ڈرائیور" in res
+    assert "لوکیشن" in res
+    assert "شیئر" in res
+
+
+def test_expanded_contractions_transliteration():
+    assert roman_to_urdu("chahiye") == "چاہیے"
+    assert roman_to_urdu("chahye") == "چاہیے"
+    assert roman_to_urdu("kch") == "کچھ"
+    assert roman_to_urdu("sb") == "سب"
+    assert roman_to_urdu("agr") == "اگر"
+    assert roman_to_urdu("srf") == "صرف"
+
+

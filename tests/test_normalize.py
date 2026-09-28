@@ -15,6 +15,12 @@ def test_normalize_roman_urdu_variants():
     assert normalize("bht shukria") == "bohot shukriya"
     assert normalize("mjhe btao") == "mujhe batao"
     assert normalize("hmain help chahiye") == "humein help chahiye"
+    assert normalize("kch toh bolo") == "kuch toh bolo"
+    assert normalize("sb theek hai") == "sab theek hai"
+    assert normalize("agr aisa hua") == "agar aisa hua"
+    assert normalize("srf ek bar") == "sirf ek bar"
+    assert normalize("mujhe chahye") == "mujhe chahiye"
+
 
 
 def test_normalize_elongation():
