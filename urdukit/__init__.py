@@ -6,7 +6,7 @@ search engines, or NLP models.
 """
 
 from urdukit.detect import Script, detect_script
-from urdukit.normalize import normalize
+from urdukit.normalize import normalize, normalize_digits
 from urdukit.transliterate import ENGLISH_LOANWORDS, roman_to_urdu, to_urdu_script, urdu_to_roman
 from urdukit.embeddings import UrduEmbedder
 
@@ -16,6 +16,7 @@ __all__ = [
     "Script",
     "detect_script",
     "normalize",
+    "normalize_digits",
     "ENGLISH_LOANWORDS",
     "roman_to_urdu",
     "to_urdu_script",

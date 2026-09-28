@@ -219,6 +219,54 @@ URDU_CHAR_NORMALIZATION_MAP: Dict[str, str] = {
 # Urdu diacritics / aerab (Zabar, Zer, Pesh, Tashdeed, Tanween, Sukun, etc.)
 URDU_DIACRITICS_REGEX = re.compile(r"[\u064B-\u065F\u0670\u06D6-\u06ED]")
 
+# Numerals definitions
+URDU_DIGITS = "۰۱۲۳۴۵۶۷۸۹"
+ARABIC_INDIC_DIGITS = "٠١٢٣٤٥٦٧٨٩"
+LATIN_DIGITS = "0123456789"
+
+_TO_LATIN_DIGITS_TRANS = str.maketrans(
+    URDU_DIGITS + ARABIC_INDIC_DIGITS,
+    LATIN_DIGITS + LATIN_DIGITS,
+)
+
+_TO_URDU_DIGITS_TRANS = str.maketrans(
+    LATIN_DIGITS + ARABIC_INDIC_DIGITS,
+    URDU_DIGITS + URDU_DIGITS,
+)
+
+
+def normalize_digits(text: str, target: str = "latin") -> str:
+    """Normalize digits between Urdu (Eastern Arabic-Indic) and Latin numerals.
+
+    Converts Eastern Arabic-Indic (۰-۹) and Arabic-Indic (٠-٩) numerals
+    to standard Latin (0-9) numerals, or vice versa.
+
+    Args:
+        text: String containing numerals to normalize.
+        target: Target numeral format. Options are:
+            - 'latin' (or 'en', 'ascii'): converts all digits to 0-9.
+            - 'urdu' (or 'ur', 'eastern'): converts all digits to ۰-۹.
+
+    Returns:
+        String with normalized numerals.
+
+    Raises:
+        ValueError: If target is not recognized.
+    """
+    if not text:
+        return ""
+
+    target_clean = target.lower().strip()
+    if target_clean in ("latin", "en", "western", "ascii"):
+        return text.translate(_TO_LATIN_DIGITS_TRANS)
+    elif target_clean in ("urdu", "ur", "eastern"):
+        return text.translate(_TO_URDU_DIGITS_TRANS)
+    else:
+        raise ValueError(
+            f"Unknown target numeral format: '{target}'. Expected 'latin' or 'urdu'."
+        )
+
+
 
 def reduce_elongation(word: str) -> str:
     """Reduce repetitive character elongations common in informal Roman Urdu chat.
@@ -302,7 +350,16 @@ def normalize_roman_urdu(text: str, remove_elongation_flag: bool = True) -> str:
                 replacement = canonical
             normalized_tokens.append(replacement)
         else:
-            normalized_tokens.append(processed if remove_elongation_flag else token)
+            if remove_elongation_flag and processed != lower_token:
+                if token.isupper() and len(token) > 1:
+                    replacement = processed.upper()
+                elif token[0].isupper():
+                    replacement = processed.capitalize()
+                else:
+                    replacement = processed
+                normalized_tokens.append(replacement)
+            else:
+                normalized_tokens.append(token)
 
     return "".join(normalized_tokens)
 
@@ -313,11 +370,13 @@ def normalize(
     normalize_script: bool = True,
     remove_diacritics: bool = False,
     strip_extra_whitespace: bool = True,
+    normalize_digits_to: Optional[str] = None,
 ) -> str:
     """Main normalization middleware function.
 
     Standardizes Roman Urdu spellings, reduces character elongations,
-    normalizes Urdu Unicode characters, and cleans whitespace.
+    normalizes Urdu Unicode characters, cleans whitespace, and optionally
+    normalizes numerals.
 
     Args:
         text: Raw user input text (Roman Urdu, Urdu script, English, or Mixed).
@@ -325,6 +384,8 @@ def normalize(
         normalize_script: Whether to convert non-standard Arabic ligatures to Urdu Unicode.
         remove_diacritics: Whether to remove Urdu aerab (diacritics like zer, zabar, pesh).
         strip_extra_whitespace: Whether to collapse multiple spaces into a single space.
+        normalize_digits_to: Optional target format for numeral normalization ('latin' or 'urdu').
+            If None (default), numerals are not modified.
 
     Returns:
         Clean, standardized text ready for LLM, search engine, or embedding models.
@@ -341,7 +402,11 @@ def normalize(
     # 2. Normalize Roman Urdu spelling variants & elongations
     result = normalize_roman_urdu(result, remove_elongation_flag=remove_elongation)
 
-    # 3. Clean redundant spaces while preserving line breaks if needed
+    # 3. Normalize numerals if requested
+    if normalize_digits_to is not None:
+        result = normalize_digits(result, target=normalize_digits_to)
+
+    # 4. Clean redundant spaces while preserving line breaks if needed
     if strip_extra_whitespace:
         # Collapse multiple spaces or tabs into a single space per line
         result = re.sub(r"[ \t]+", " ", result)
