@@ -118,6 +118,16 @@ print(clean)
 raw_urdu = "شـــکـــریہ، كیا آپ علی ہیں؟"
 print(normalize(raw_urdu))
 # Output: "شکریہ، کیا آپ علی ہیں؟"
+
+# Eastern Arabic-Indic / Arabic numeral normalization
+from urdukit import normalize_digits
+
+print(normalize_digits("قیمت ۱۲۵۰ روپے ہے", target="latin"))
+# Output: "قیمت 1250 روپے ہے"
+
+# Combined normalization with numerals in one pipeline call
+print(normalize("kesy ho yaaaar? OTP ۴۵۶۷۸ ہے", normalize_digits_to="latin"))
+# Output: "kaise ho yaar? OTP 45678 ہے"
 ```
 
 ---
@@ -151,10 +161,54 @@ print(unified_latin_loanwords)
 # Output: "میرا order cancel کر دیں please, بہت دیر ہو گئی ہے"
 ```
 
+---
+
+### 4. Sentence Segmentation & Word Tokenization
+
+Lightweight tokenizers designed specifically to respect Urdu punctuation (`۔` full stop, `؟` question mark, `،` comma, `؛` semicolon) as well as Latin boundaries:
+
+```python
+from urdukit import split_sentences, tokenize_words
+
+# Sentence splitting (recognizes Urdu Khatma '۔' and Question mark '؟')
+urdu_doc = "یہ پہلا جملہ ہے۔ کیا آپ خیریت سے ہیں؟ جی ہاں، سب ٹھیک ہے۔"
+sentences = split_sentences(urdu_doc)
+print(sentences)
+# Output: ['یہ پہلا جملہ ہے۔', 'کیا آپ خیریت سے ہیں؟', 'جی ہاں، سب ٹھیک ہے۔']
+
+# Word tokenization with optional punctuation removal
+tokens = tokenize_words("کیا حال ہے؟ سب ٹھیک ہے، شکر ہے۔", remove_punct=True)
+print(tokens)
+# Output: ['کیا', 'حال', 'ہے', 'سب', 'ٹھیک', 'ہے', 'شکر', 'ہے']
+```
 
 ---
 
-### 4. Semantic Search & Embeddings
+### 5. Stopword Detection & Filtering
+
+High-speed stopword identification and removal for search indexes, TF-IDF / BM25, and prompt compression:
+
+```python
+from urdukit import remove_stopwords, is_stopword, get_stopwords
+
+# Check individual stopwords
+print(is_stopword("اور"))   # True (Urdu script)
+print(is_stopword("aur"))   # True (Roman Urdu)
+print(is_stopword("laptop")) # False
+
+# Filter stopwords automatically (detects script on the fly)
+urdu_text = "پاکستان کا دارالحکومت اسلام آباد ہے"
+print(remove_stopwords(urdu_text))
+# Output: "پاکستان دارالحکومت اسلام آباد"
+
+roman_text = "order cancel karne ka tareeqa kya hai"
+print(remove_stopwords(roman_text))
+# Output: "order cancel karne tareeqa"
+```
+
+---
+
+### 6. Semantic Search & Embeddings
 
 Semantic search across Roman Urdu, Urdu script, and English with auto-normalization:
 
@@ -234,7 +288,10 @@ pytest
 - [x] Script detection (`urdu_script`, `roman_urdu`, `english`, `mixed`, `unknown`)
 - [x] Roman Urdu dictionary-based spelling normalizer & elongation reduction
 - [x] Urdu script Unicode normalizer (Arabic ligature normalization, Kashida removal)
-- [x] Bidirectional transliterator (`roman_to_urdu`, `urdu_to_roman`)
+- [x] Numerals normalization (Eastern Arabic-Indic ۰-۹, Arabic-Indic ٠-٩, and Latin 0-9)
+- [x] Bidirectional transliterator (`roman_to_urdu`, `urdu_to_roman`) and unified script conversion (`to_urdu_script`)
+- [x] Sentence segmentation (`split_sentences`) and word tokenization (`tokenize_words`)
+- [x] Stopword detection and filtering for Urdu script and Roman Urdu (`remove_stopwords`, `is_stopword`)
 - [x] Multilingual semantic embeddings wrapper (`intfloat/multilingual-e5-small`)
 - [ ] Hugging Face Spaces interactive demo
 - [ ] Extended crowdsourced Roman Urdu dictionary from open Pakistani datasets
