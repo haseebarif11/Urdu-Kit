@@ -240,6 +240,76 @@ for rank, doc, score in ranked:
 
 ---
 
+### 7. Sentiment Polarity Analysis
+
+Fast, lightweight sentiment scoring for Pakistani Roman Urdu and Urdu script without requiring 500MB+ models:
+
+```python
+from urdukit import analyze_sentiment
+
+# Roman Urdu sentiment (with negation awareness)
+print(analyze_sentiment("yeh bohot achi aur shandar product hai"))
+# Output: {'label': 'positive', 'score': 1.0, 'positive_words': ['achi', 'shandar'], 'negative_words': []}
+
+print(analyze_sentiment("yeh mobile acha nahi hai"))
+# Output: {'label': 'negative', 'score': -1.0, 'positive_words': [], 'negative_words': ['not_acha']}
+
+# Urdu script sentiment
+print(analyze_sentiment("بہت برا اور ناقص کام ہے، سخت نقصان ہوا"))
+# Output: {'label': 'negative', 'score': -1.0, 'positive_words': [], 'negative_words': ['برا', 'نقصان']}
+```
+
+---
+
+### 8. Text Analytics & Script Statistics
+
+Inspect document lengths, word counts, and language/script distribution:
+
+```python
+from urdukit import text_stats
+
+stats = text_stats("یہ پہلا جملہ ہے۔ قیمت ۱۲۵۰ روپے ہے۔")
+print(stats)
+# Output:
+# {
+#   'character_count': 35,
+#   'word_count': 7,
+#   'sentence_count': 2,
+#   'urdu_char_count': 20,
+#   'latin_char_count': 0,
+#   'digit_count': 4,
+#   'urdu_ratio': 1.0,
+#   'latin_ratio': 0.0,
+#   'script': 'urdu_script',
+#   'reading_time_sec': 2
+# }
+```
+
+---
+
+### 9. Command-Line Interface (CLI)
+
+Use `urdukit` directly from your terminal or shell scripts:
+
+```bash
+# Detect script
+urdukit detect "kya haal hai bhai?"
+
+# Normalize text & numerals
+urdukit normalize "kesy ho yaaaar? OTP ۴۵۶ ہے" --digits latin
+
+# Transliterate
+urdukit transliterate "kya hal hai" --mode to-urdu
+
+# Analyze sentiment
+urdukit sentiment "bohot achi service hai" --json
+
+# Text statistics
+urdukit stats "یہ اردو ٹیکسٹ ہے"
+```
+
+---
+
 ## 🤖 End-to-End LLM Middleware Pipeline
 
 Here is how you can use `urdukit` to guard your LLM pipeline (e.g. using free-tier Groq, Ollama, or OpenAI):
@@ -292,6 +362,9 @@ pytest
 - [x] Bidirectional transliterator (`roman_to_urdu`, `urdu_to_roman`) and unified script conversion (`to_urdu_script`)
 - [x] Sentence segmentation (`split_sentences`) and word tokenization (`tokenize_words`)
 - [x] Stopword detection and filtering for Urdu script and Roman Urdu (`remove_stopwords`, `is_stopword`)
+- [x] Lightweight sentiment polarity analyzer (`analyze_sentiment`)
+- [x] Text analytics and script distribution metrics (`text_stats`)
+- [x] Command-Line Interface (`urdukit` CLI)
 - [x] Multilingual semantic embeddings wrapper (`intfloat/multilingual-e5-small`)
 - [ ] Hugging Face Spaces interactive demo
 - [ ] Extended crowdsourced Roman Urdu dictionary from open Pakistani datasets
