@@ -301,6 +301,13 @@ urdukit normalize "kesy ho yaaaar? OTP ۴۵۶ ہے" --digits latin
 # Transliterate
 urdukit transliterate "kya hal hai" --mode to-urdu
 
+# Tokenize words or sentences
+urdukit tokenize "urdu zaban seekho!" --remove-punct
+urdukit tokenize "یہ پہلا جملہ ہے۔ یہ دوسرا جملہ ہے۔" --sentences
+
+# Remove stopwords
+urdukit stopwords "yeh ek achi kitab hai"
+
 # Analyze sentiment
 urdukit sentiment "bohot achi service hai" --json
 
