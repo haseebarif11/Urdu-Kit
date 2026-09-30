@@ -170,3 +170,42 @@ def test_similarity_empty_documents():
     scores = embedder.similarity("kuch bhi query", [])
     assert scores == []
     fake_model.encode.assert_not_called()
+
+
+def test_rank_empty_documents():
+    embedder = UrduEmbedder()
+    fake_model = MagicMock()
+    embedder._model = fake_model
+
+    results = embedder.rank("kuch bhi query", [])
+    assert results == []
+    fake_model.encode.assert_not_called()
+
+
+def test_rank_top_k_larger_than_documents():
+    embedder = UrduEmbedder(auto_normalize=False)
+    fake_model = MagicMock()
+
+    def fake_encode(texts, **kwargs):
+        vecs = []
+        for t in texts:
+            if "high" in t:
+                vecs.append([1.0, 0.0])
+            elif "low" in t:
+                vecs.append([0.0, 1.0])
+            else:
+                vecs.append([1.0, 0.0])
+        return np.array(vecs)
+
+    fake_model.encode.side_effect = fake_encode
+    embedder._model = fake_model
+
+    documents = ["low relevance doc", "high relevance doc"]
+    results = embedder.rank("query", documents, top_k=10)
+
+    # Returns all available docs even if top_k is larger
+    assert len(results) == 2
+    assert results[0][0] == 1
+    assert results[0][1] == "high relevance doc"
+    assert results[1][0] == 0
+    assert results[1][1] == "low relevance doc"
