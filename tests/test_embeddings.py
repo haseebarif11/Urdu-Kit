@@ -1,5 +1,5 @@
-"""Tests for urdukit.embeddings module."""
-
+from unittest.mock import MagicMock
+import numpy as np
 import pytest
 from urdukit.embeddings import UrduEmbedder
 
@@ -29,3 +29,20 @@ def test_missing_dependency_informative_error(monkeypatch):
             sys.modules["sentence_transformers"] = orig_st
         else:
             sys.modules.pop("sentence_transformers", None)
+
+
+def test_auto_normalize_applied_before_embedding():
+    embedder = UrduEmbedder(auto_normalize=True)
+    fake_model = MagicMock()
+    fake_model.encode.side_effect = lambda texts, **kwargs: np.zeros((len(texts), 4))
+    embedder._model = fake_model
+
+    unnormalized_text = "kesyyy hooo yaaaar"
+    embedder.embed(unnormalized_text)
+
+    assert fake_model.encode.called
+    call_args, _ = fake_model.encode.call_args
+    passed_texts = call_args[0]
+    assert len(passed_texts) == 1
+    assert "kaise" in passed_texts[0]
+    assert "kesyyy" not in passed_texts[0]
