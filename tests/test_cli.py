@@ -70,3 +70,11 @@ def test_cli_tokenize_sentences(capsys):
     assert len(lines) == 2
     assert "pehla jumla" in lines[0]
     assert "doosra jumla" in lines[1]
+
+
+def test_cli_stopwords(capsys):
+    ret = main(["stopwords", "yeh ek achi kitab hai"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert "kitab" in captured
+    assert "yeh" not in captured.split()
