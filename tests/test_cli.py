@@ -86,3 +86,17 @@ def test_cli_sentiment_plain(capsys):
     captured = capsys.readouterr().out.strip()
     assert "positive" in captured
     assert "(score:" in captured
+
+
+def test_cli_transliterate_modes(capsys):
+    # Test to-roman mode
+    ret = main(["transliterate", "کیا حال ہے", "--mode", "to-roman"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert "kya" in captured or "haal" in captured
+
+    # Test unified mode
+    ret = main(["transliterate", "main invoice send kar raha hoon", "--mode", "unified"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert "انوائس" in captured
