@@ -106,3 +106,57 @@ def test_similarity_scores_correct():
     assert pytest.approx(1.0, abs=0.01) == scores[0]
     assert pytest.approx(0.0, abs=0.01) == scores[1]
     assert pytest.approx(0.6, abs=0.01) == scores[2]
+
+
+def test_rank_sorts_and_respects_top_k():
+    embedder = UrduEmbedder(auto_normalize=False)
+    fake_model = MagicMock()
+
+    def fake_encode(texts, **kwargs):
+        vecs = []
+        for t in texts:
+            if "exact" in t:
+                vecs.append([1.0, 0.0])
+            elif "unrelated" in t:
+                vecs.append([0.0, 1.0])
+            elif "partial" in t:
+                vecs.append([0.6, 0.8])
+            else:
+                vecs.append([1.0, 0.0])
+        return np.array(vecs)
+
+    fake_model.encode.side_effect = fake_encode
+    embedder._model = fake_model
+
+    query = "urdu zaban seekhein"
+    # Provide 4 candidate documents where original positions are:
+    # index 0: unrelated (score 0.0)
+    # index 1: exact match (score 1.0)
+    # index 2: partial match (score 0.6)
+    # index 3: another unrelated (score 0.0)
+    documents = [
+        "unrelated document about astronomy",
+        "urdu zaban seekhein exact",
+        "partial match urdu seekhein",
+        "another unrelated document",
+    ]
+
+    top_k = 2
+    results = embedder.rank(query, documents, top_k=top_k)
+
+    # Exactly top_k results are returned
+    assert len(results) == top_k
+
+    # Results are sorted highest-similarity-first
+    assert results[0][2] >= results[1][2]
+
+    # Verify tuple structure (original_index, document_text, score) and index mapping
+    orig_idx_0, doc_text_0, score_0 = results[0]
+    assert orig_idx_0 == 1
+    assert doc_text_0 == documents[1]
+    assert pytest.approx(1.0, abs=0.01) == score_0
+
+    orig_idx_1, doc_text_1, score_1 = results[1]
+    assert orig_idx_1 == 2
+    assert doc_text_1 == documents[2]
+    assert pytest.approx(0.6, abs=0.01) == score_1
