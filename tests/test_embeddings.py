@@ -209,3 +209,17 @@ def test_rank_top_k_larger_than_documents():
     assert results[0][1] == "high relevance doc"
     assert results[1][0] == 0
     assert results[1][1] == "low relevance doc"
+
+
+def test_embed_batch_inputs():
+    embedder = UrduEmbedder(auto_normalize=False)
+    fake_model = MagicMock()
+    fake_model.encode.side_effect = lambda texts, **kwargs: np.ones((len(texts), 8))
+    embedder._model = fake_model
+
+    texts = ["pehla jumla", "doosra jumla", "teesra jumla"]
+    vecs = embedder.embed(texts, batch_size=16)
+
+    assert isinstance(vecs, np.ndarray)
+    assert vecs.shape == (3, 8)
+    assert fake_model.encode.call_args[1]["batch_size"] == 16
