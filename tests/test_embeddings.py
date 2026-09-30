@@ -160,3 +160,13 @@ def test_rank_sorts_and_respects_top_k():
     assert orig_idx_1 == 2
     assert doc_text_1 == documents[2]
     assert pytest.approx(0.6, abs=0.01) == score_1
+
+
+def test_similarity_empty_documents():
+    embedder = UrduEmbedder()
+    fake_model = MagicMock()
+    embedder._model = fake_model
+
+    scores = embedder.similarity("kuch bhi query", [])
+    assert scores == []
+    fake_model.encode.assert_not_called()
