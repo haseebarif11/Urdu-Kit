@@ -78,3 +78,11 @@ def test_cli_stopwords(capsys):
     captured = capsys.readouterr().out.strip()
     assert "kitab" in captured
     assert "yeh" not in captured.split()
+
+
+def test_cli_sentiment_plain(capsys):
+    ret = main(["sentiment", "bohot acha kaam hai"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert "positive" in captured
+    assert "(score:" in captured
