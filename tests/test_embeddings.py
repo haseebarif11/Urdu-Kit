@@ -65,3 +65,44 @@ def test_e5_query_passage_prefixing():
     embedder.embed(sample_text, is_query=False)
     assert fake_model.encode.call_args[0][0][0].startswith("passage: ")
     assert fake_model.encode.call_args[0][0][0] == "passage: urdu zaban ki tareekh"
+
+
+def test_similarity_scores_correct():
+    embedder = UrduEmbedder(auto_normalize=False)
+    fake_model = MagicMock()
+
+    # Predefined normalized unit vectors (dim=2):
+    # Query: [1.0, 0.0]
+    # Exact match: [1.0, 0.0] -> cosine similarity = 1.0
+    # Unrelated (orthogonal): [0.0, 1.0] -> cosine similarity = 0.0
+    # Partial match: [0.6, 0.8] -> cosine similarity = 0.6
+    def fake_encode(texts, **kwargs):
+        vecs = []
+        for t in texts:
+            if "exact" in t:
+                vecs.append([1.0, 0.0])
+            elif "unrelated" in t:
+                vecs.append([0.0, 1.0])
+            elif "partial" in t:
+                vecs.append([0.6, 0.8])
+            else:
+                # Query text
+                vecs.append([1.0, 0.0])
+        return np.array(vecs)
+
+    fake_model.encode.side_effect = fake_encode
+    embedder._model = fake_model
+
+    query = "urdu zaban seekhein"
+    documents = [
+        "urdu zaban seekhein exact",
+        "unrelated document about astronomy",
+        "partial match urdu seekhein",
+    ]
+
+    scores = embedder.similarity(query, documents)
+
+    assert len(scores) == 3
+    assert pytest.approx(1.0, abs=0.01) == scores[0]
+    assert pytest.approx(0.0, abs=0.01) == scores[1]
+    assert pytest.approx(0.6, abs=0.01) == scores[2]
