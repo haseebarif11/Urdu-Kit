@@ -54,3 +54,19 @@ def test_cli_stats(capsys):
 def test_cli_no_command(capsys):
     ret = main([])
     assert ret == 0
+
+
+def test_cli_tokenize_words(capsys):
+    ret = main(["tokenize", "urdu zaban seekho!", "--remove-punct"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert captured == "urdu zaban seekho"
+
+
+def test_cli_tokenize_sentences(capsys):
+    ret = main(["tokenize", "Yeh pehla jumla hai. Yeh doosra jumla hai.", "--sentences"])
+    assert ret == 0
+    lines = capsys.readouterr().out.strip().splitlines()
+    assert len(lines) == 2
+    assert "pehla jumla" in lines[0]
+    assert "doosra jumla" in lines[1]
