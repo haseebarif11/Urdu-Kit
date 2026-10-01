@@ -4,10 +4,12 @@ Computes character, word, sentence, and script distribution metrics
 for Urdu script, Roman Urdu, and multilingual text.
 """
 
+from collections import Counter
 import re
-from typing import Any, Dict
+from typing import Any, Dict, List, Tuple
 
 from urdukit.detect import LATIN_CHAR_REGEX, URDU_CHAR_REGEX, detect_script
+from urdukit.stopwords import is_stopword
 from urdukit.tokenize import split_sentences, tokenize_words
 
 DIGIT_REGEX = re.compile(r"[\d۰-۹٠-٩]")
@@ -23,6 +25,9 @@ def text_stats(text: str) -> Dict[str, Any]:
         Dictionary containing:
         - 'character_count': Total characters including whitespace
         - 'word_count': Total word tokens
+        - 'unique_word_count': Number of unique words (case-insensitive)
+        - 'lexical_diversity': Type-Token Ratio (TTR: unique_words / total_words)
+        - 'avg_word_length': Average characters per word token
         - 'sentence_count': Total recognized sentences
         - 'urdu_char_count': Count of Urdu script characters
         - 'latin_char_count': Count of Latin characters
@@ -36,6 +41,9 @@ def text_stats(text: str) -> Dict[str, Any]:
         return {
             "character_count": 0,
             "word_count": 0,
+            "unique_word_count": 0,
+            "lexical_diversity": 0.0,
+            "avg_word_length": 0.0,
             "sentence_count": 0,
             "urdu_char_count": 0,
             "latin_char_count": 0,
@@ -51,6 +59,12 @@ def text_stats(text: str) -> Dict[str, Any]:
     word_count = len(words)
     sentences = split_sentences(text)
     sentence_count = len(sentences)
+
+    normalized_words = [w.lower() for w in words]
+    unique_words = set(normalized_words)
+    unique_word_count = len(unique_words)
+    lexical_diversity = round(unique_word_count / word_count, 3) if word_count > 0 else 0.0
+    avg_word_length = round(sum(len(w) for w in words) / word_count, 2) if word_count > 0 else 0.0
 
     urdu_chars = len(URDU_CHAR_REGEX.findall(text))
     latin_chars = len(LATIN_CHAR_REGEX.findall(text))
@@ -68,6 +82,9 @@ def text_stats(text: str) -> Dict[str, Any]:
     return {
         "character_count": char_count,
         "word_count": word_count,
+        "unique_word_count": unique_word_count,
+        "lexical_diversity": lexical_diversity,
+        "avg_word_length": avg_word_length,
         "sentence_count": sentence_count,
         "urdu_char_count": urdu_chars,
         "latin_char_count": latin_chars,
@@ -77,3 +94,32 @@ def text_stats(text: str) -> Dict[str, Any]:
         "script": str(detected),
         "reading_time_sec": reading_time_sec,
     }
+
+
+def top_words(text: str, n: int = 10, remove_stop: bool = True) -> List[Tuple[str, int]]:
+    """Return the most frequent word tokens in text with their occurrences.
+
+    Args:
+        text: Input string in Urdu script or Roman Urdu.
+        n: Number of top words to return (default: 10).
+        remove_stop: If True, filters out Urdu and Roman Urdu stopwords.
+
+    Returns:
+        List of (word, count) tuples sorted in descending order of frequency.
+    """
+    if not text or not text.strip() or n <= 0:
+        return []
+
+    words = tokenize_words(text, remove_punct=True)
+    if not words:
+        return []
+
+    processed = []
+    for w in words:
+        wl = w.lower()
+        if remove_stop and is_stopword(wl):
+            continue
+        processed.append(wl)
+
+    counter = Counter(processed)
+    return counter.most_common(n)

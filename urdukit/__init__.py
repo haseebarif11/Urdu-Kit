@@ -17,7 +17,7 @@ from urdukit.stopwords import (
     remove_stopwords,
 )
 from urdukit.sentiment import analyze_sentiment
-from urdukit.stats import text_stats
+from urdukit.stats import text_stats, top_words
 from urdukit.embeddings import UrduEmbedder
 
 __version__ = "0.1.0"
@@ -40,6 +40,7 @@ __all__ = [
     "remove_stopwords",
     "analyze_sentiment",
     "text_stats",
+    "top_words",
     "UrduEmbedder",
     "__version__",
 ]
