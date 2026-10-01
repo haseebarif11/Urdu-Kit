@@ -100,3 +100,20 @@ def test_cli_transliterate_modes(capsys):
     assert ret == 0
     captured = capsys.readouterr().out.strip()
     assert "انوائس" in captured
+
+
+def test_cli_stats_default(capsys):
+    ret = main(["stats", "yeh ek acha jumla hai"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert "word_count" in captured
+    assert "lexical_diversity" in captured
+    assert "unique_word_count" in captured
+
+
+def test_cli_stats_top_words(capsys):
+    ret = main(["stats", "zabardast project zabardast idea", "--top-words", "2"])
+    assert ret == 0
+    captured = capsys.readouterr().out.strip()
+    assert "top_words" in captured
+    assert "zabardast" in captured
