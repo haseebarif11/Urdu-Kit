@@ -263,26 +263,37 @@ print(analyze_sentiment("بہت برا اور ناقص کام ہے، سخت نق
 
 ### 8. Text Analytics & Script Statistics
 
-Inspect document lengths, word counts, and language/script distribution:
+Inspect document lengths, word counts, lexical diversity, and language/script distribution:
 
 ```python
-from urdukit import text_stats
+from urdukit import text_stats, top_words
 
-stats = text_stats("یہ پہلا جملہ ہے۔ قیمت ۱۲۵۰ روپے ہے۔")
+text = "یہ پہلا جملہ ہے۔ قیمت ۱۲۵۰ روپے ہے۔ یہ دوسرا شاندار جملہ ہے۔"
+
+# Structural & linguistic metrics
+stats = text_stats(text)
 print(stats)
 # Output:
 # {
-#   'character_count': 35,
-#   'word_count': 7,
-#   'sentence_count': 2,
-#   'urdu_char_count': 20,
+#   'character_count': 59,
+#   'word_count': 11,
+#   'unique_word_count': 9,
+#   'lexical_diversity': 0.818,
+#   'avg_word_length': 3.64,
+#   'sentence_count': 3,
+#   'urdu_char_count': 36,
 #   'latin_char_count': 0,
 #   'digit_count': 4,
 #   'urdu_ratio': 1.0,
 #   'latin_ratio': 0.0,
 #   'script': 'urdu_script',
-#   'reading_time_sec': 2
+#   'reading_time_sec': 4
 # }
+
+# Extract top frequent keywords (excluding stopwords)
+top = top_words("bohat acha project hai bohat zabardast project shandar project", n=3)
+print(top)
+# [('project', 3), ('bohat', 2), ('shandar', 1)]
 ```
 
 ---
@@ -311,8 +322,8 @@ urdukit stopwords "yeh ek achi kitab hai"
 # Analyze sentiment
 urdukit sentiment "bohot achi service hai" --json
 
-# Text statistics
-urdukit stats "یہ اردو ٹیکسٹ ہے"
+# Text statistics & top frequent words
+urdukit stats "یہ اردو ٹیکسٹ ہے جس میں الفاظ کی تعداد ناپی جاتی ہے" --top-words 3
 ```
 
 ---
