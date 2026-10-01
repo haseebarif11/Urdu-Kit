@@ -13,7 +13,7 @@ from urdukit import __version__
 from urdukit.detect import detect_script
 from urdukit.normalize import normalize, normalize_digits
 from urdukit.sentiment import analyze_sentiment
-from urdukit.stats import text_stats
+from urdukit.stats import text_stats, top_words
 from urdukit.stopwords import remove_stopwords
 from urdukit.tokenize import split_sentences, tokenize_words
 from urdukit.transliterate import roman_to_urdu, to_urdu_script, urdu_to_roman
@@ -84,6 +84,13 @@ def build_parser() -> argparse.ArgumentParser:
     # 6. stats
     stats_p = subparsers.add_parser("stats", help="Compute text statistics & metrics")
     stats_p.add_argument("text", type=str, help="Text to evaluate")
+    stats_p.add_argument(
+        "--top-words",
+        type=int,
+        default=0,
+        metavar="N",
+        help="Include top N frequent words in stats output",
+    )
 
     # 7. stopwords
     sw_p = subparsers.add_parser("stopwords", help="Remove stopwords from text")
@@ -139,6 +146,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     elif args.command == "stats":
         stats = text_stats(args.text)
+        if args.top_words > 0:
+            stats["top_words"] = top_words(args.text, n=args.top_words)
         print(json.dumps(stats, ensure_ascii=False, indent=2))
 
     elif args.command == "stopwords":
