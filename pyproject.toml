@@ -43,9 +43,6 @@ classifiers = [
 ]
 dependencies = []
 
-[project.scripts]
-urdukit = "urdukit.cli:main"
-
 [project.optional-dependencies]
 embeddings = [
     "sentence-transformers>=2.2.0",
