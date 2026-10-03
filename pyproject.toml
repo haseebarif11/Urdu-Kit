@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A lightweight Python middleware toolkit for handling Roman Urdu and Urdu-script text before it reaches LLMs, search engines, or NLP models."
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
     {name = "Haseeb Arif", email = "haseebarif11@users.noreply.github.com"}
 ]
@@ -29,7 +29,6 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: Urdu",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
