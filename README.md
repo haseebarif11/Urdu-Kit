@@ -2,6 +2,8 @@
 
 > **The missing NLP middleware toolkit for Roman Urdu, Urdu Script, and Code-Switched text.**
 
+UrduKit provides a lightweight, zero‑dependency Python library that normalizes, transliterates, and analyses mixed‑script Pakistani text. It bridges the gap between raw user input and downstream AI models (LLMs, vector databases, sentiment classifiers) by handling script detection, spelling normalisation, numeral conversion, tokenisation, stop‑word filtering, sentiment analysis, and semantic search—all in a single, easy‑to‑use package.
+
 [![PyPI Version](https://img.shields.io/pypi/v/urdukit.svg)](https://pypi.org/project/urdukit/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/urdukit.svg)](https://pypi.org/project/urdukit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -361,6 +363,23 @@ print(process_user_query("kesyyy hooo bhai?? mera package kidhr h??"))
 
 ---
 
+## 🤝 Contributing
+
+We welcome contributions! To get started:
+
+1. **Fork the repository** and clone your fork.
+2. **Create a virtual environment** and install development dependencies:
+   ```bash
+   pip install -e ".[dev]"
+   ```
+3. Run the test suite to ensure everything works:
+   ```bash
+   pytest
+   ```
+4. Open a pull request with a clear description of your changes.
+
+Please follow the existing code style (PEP 8) and include tests for new functionality. See the full guide in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## 🧪 Running Tests
 
 UrduKit comes with a comprehensive test suite covering realistic Pakistani slang, typos, and Unicode edge cases:
@@ -389,6 +408,19 @@ pytest
 - [ ] Lightweight fastText / char-ngram language classifier for fine-grained sub-dialects
 
 ---
+
+## 📜 Changelog
+
+All notable changes to this project will be documented in this file.
+
+### [0.1.0] - 2026-10-08
+- Initial public release of UrduKit with core features:
+  - Script detection, normalisation, numeral conversion
+  - Roman‑Urdu ↔ Urdu‑script transliteration
+  - Tokenisation, stop‑word removal, sentiment analysis
+  - Semantic search wrapper for multilingual embeddings
+  - Comprehensive CLI
+- Added extensive documentation and usage examples.
 
 ## 📄 License
 
